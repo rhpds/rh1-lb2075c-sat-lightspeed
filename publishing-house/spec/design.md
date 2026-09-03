@@ -1,89 +1,73 @@
-# [Project Title]
-
-<!-- This file is the design document for your lab or demo. -->
-<!-- Fill in each section below, or run /rhdp-publishing-house to have the intake skill help. -->
-<!-- Sections marked with [brackets] are placeholders — replace with real content. -->
-<!-- The validation gate checks for all required sections before submission. -->
+# Installing Red Hat Lightspeed on Red Hat Satellite
 
 ## Overview
 
-[2-3 sentences on what this lab or demo is and why it exists. Then a direct description of what participants will do — specific enough that someone reading this section immediately understands the content without interpretation. No flowery language. Example: "Participants will deploy a 3-tier application on OpenShift, configure autoscaling, and troubleshoot a simulated pod failure."]
+This lab guides participants through installing and configuring Red Hat Lightspeed on an existing Red Hat Satellite server. Red Hat Lightspeed is a containerized, on-premises vulnerability monitoring service that processes CVE data locally without transmitting data externally. Participants will install Lightspeed using the satellite-installer command, download and stage the CVE metadata database, register RHEL 10 hosts with Red Hat Insights, and confirm that vulnerability data appears in the Satellite web UI.
 
 ## Target Audience
 
-- **Role:** [Data scientists, platform engineers, developers, etc.]
-- **Experience level:** [Beginner, intermediate, or advanced]
-- **What they already know:** [Existing skills and knowledge]
-- **What they don't know:** [Skills this lab teaches]
+- **Role:** System administrators, Satellite administrators, and infrastructure engineers
+- **Experience level:** Beginner
+- **What they already know:** Basic familiarity with Linux command-line and web UIs; no prior Red Hat Satellite or Red Hat Lightspeed experience required
+- **What they don't know:** How to install and enable Red Hat Lightspeed on a Satellite server; how Lightspeed processes CVE data locally using cvemap.xml; how to register RHEL hosts with Red Hat Insights and verify vulnerability detection
 
 ## Prerequisites
 
-- [What the learner must know or have completed before starting]
-- [Can the lab validate these automatically? Yes/No — brief explanation]
-
-<!-- If no prerequisites, write "None" -->
+- None — Red Hat Satellite is pre-installed and content is pre-synchronized in the lab environment
 
 ## Learning Objectives
 
-1. [Action verb] [specific, measurable outcome]
-2. [Action verb] [specific, measurable outcome]
-3. [Action verb] [specific, measurable outcome]
-
-<!-- Scale to duration: up to 3 objectives per 45 min of content. Start with action verbs: Configure, Deploy, Create, Implement, Troubleshoot, Monitor, Scale. Each should be testable. NOT: Understand, Learn, Know. -->
+1. Install Red Hat Lightspeed on a Satellite server using the satellite-installer command
+2. Configure the CVE metadata database by downloading and staging cvemap.xml in the Foreman data directory
+3. Register RHEL 10 hosts with Red Hat Insights using the insights-client
+4. Verify that Red Hat Lightspeed detects and displays host vulnerabilities in the Satellite web UI
 
 ## Content Type
 
-[Lab (hands-on) or Demo (presenter-led)]
+Lab (hands-on)
 
 ## Products & Technologies
 
-- [Official Red Hat product name with version if relevant]
-- [Additional products/technologies]
-
-<!-- Use official names: "Red Hat OpenShift", not "OpenShift". List upstream projects separately. -->
+- Red Hat Satellite
+- Red Hat Lightspeed (on-premises / Satellite-integrated)
+- Red Hat Enterprise Linux 10 (RHEL 10)
+- Podman
+- Red Hat Insights / insights-client
+- Foreman
 
 ## Module Map
 
 | Module | Title | Duration |
 |--------|-------|----------|
-| 1 | [Module title] | [XX min] |
-| 2 | [Module title] | [XX min] |
-| — | **Total hands-on** | **[X hours]** |
-| — | Intro / presentation | [~XX min] |
-| — | **Total lab** | **[~X hours]** |
-
-<!-- Each module 10-30 min. Total: lab 1-4 hours, demo 15-45 min. Modules should build on each other. -->
+| 1 | Introduction | 10 min |
+| 2 | Install Red Hat Lightspeed | 25 min |
+| 3 | Configure CVE Data and Verify Lightspeed | 20 min |
+| — | **Total hands-on** | **55 min** |
+| — | **Total lab** | **~1 hour** |
 
 ## Difficulty Level
 
-[Beginner, Intermediate, or Advanced]
+Beginner
 
 ## Environment
 
-**Learner view:** [What exists when the lab starts — pre-deployed resources, what participants see and interact with. Be specific about cluster details.]
+**Learner view:** The lab starts with a pre-installed Red Hat Satellite server (satellite.lab) and two RHEL 10 hosts (rhel1.lab, rhel2.lab). Satellite content is pre-synchronized. Participants access the Satellite web UI via a browser tab and the Satellite server terminal via a wetty terminal tab provided by the Zero-Touch nookbag UI. Red Hat Lightspeed is not yet installed at lab start.
 
-**Automation needed:** [Yes/No]
-
-[If yes, list what automation must provision — operators, per-user resources, sample apps, data sets.]
+**Automation needed:** Yes — the Satellite server and two RHEL 10 hosts must be provisioned, and Satellite must be pre-configured with synchronized content before the lab begins.
 
 ## Infrastructure Requirements
 
-- **Cloud provider:** [CNV (default), AWS, or Troshka (bare-metal/nested virt)]
-- **Cluster type:** [Multinode or SNO (Single Node OpenShift)]
-- **OCP version:** [e.g. 4.20 — minimum 4.20]
-- **Topology:** [Shared cluster, per-student, or CNV pool]
-- **Sizing:** [Node types and counts with resources — e.g., "3 control plane (16 CPU, 64GB RAM), 6 workers (8 CPU, 32GB RAM, 100GB disk)"]
-- **Automation approach:** [Ansible, GitOps (Helm + ArgoCD), or combo]
-- **AI/MaaS:** [None, MaaS (open-source model), MaaS (frontier model), or dedicated GPU — include justification if not "none"]
-- **External services:** [Named services — e.g., github.com, registry.access.redhat.com — or "None"]
-- **AAP version:** [e.g. 2.5 — only if AAP is in products; omit otherwise]
-- **Non-GA products:** [Product name + version, with access plan — or "None (all products are GA)"]
-
-<!-- Not all fields must be known at intake. "TBD, estimating ~X" is fine. -->
+- **Cloud provider:** CNV (default)
+- **Cluster type:** N/A — RHEL VMs only, no OpenShift
+- **OCP version:** N/A
+- **Topology:** Per-student — each student receives their own dedicated 3-VM set (satellite.lab, rhel1.lab, rhel2.lab)
+- **Sizing:** TBD — confirmed in infrastructure phase
+- **Automation approach:** Ansible
+- **AI/MaaS:** None
+- **External services:** security.access.redhat.com (CVE metadata download during lab)
+- **AAP version:** N/A
+- **Non-GA products:** None (all products are GA)
 
 ## Assessment Strategy (Optional)
 
-<!-- Optional — skip this section for demos or classic labs without verification. -->
-<!-- Relevant for Zero-Touch labs with solve/validate buttons or labs with automated checks. -->
-
-[If applicable: how will we know the learner successfully completed each module? Per module: verification script, solve/validate button, visible result in the UI, or automated check.]
+This is a Zero-Touch lab using the nookbag UI with wetty terminals. Verification is learner-driven: participants observe the Lightspeed Vulnerability tab in the Satellite web UI and confirm that CVE data and host vulnerabilities are displayed after completing each stage. No automated solve/validate scripts are present in the current content.
