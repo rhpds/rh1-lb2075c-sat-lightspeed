@@ -122,8 +122,27 @@ approval_checklist:
       - "module-01: Introduces the lab goal and the three-node environment; walks participants through logging into the Satellite web UI using provided credentials."
       - "module-02: Explains what Red Hat Lightspeed is and guides participants through running satellite-installer --enable-iop to install it, then verifying the Lightspeed menu appears in the Satellite web UI."
       - "module-03: Walks participants through downloading cvemap.xml and staging it in the Foreman data directory, registering both RHEL 10 hosts with insights-client, and confirming vulnerabilities appear in the Lightspeed Vulnerability tab."
-    rcars_overlap_pct: null
-    rcars_top_matches: []
+    rcars_overlap_pct: 98
+    rcars_top_matches:
+      - title: "Hands on with Red Hat Lightspeed in Satellite"
+        ci_name: "zt-rhelbu.zt-lightspeed-satellite.prod"
+        url: "https://catalog.demo.redhat.com/catalog?item=zt-rhelbu.zt-lightspeed-satellite.prod"
+        relevance_score: 98
+        why_it_fits: "Directly covers Red Hat Lightspeed in Red Hat Satellite, CVE metadata and vulnerability management, and RHEL host registration with Insights — closely matching all core topics."
+        workloads: []
+      - title: "Satellite Basics"
+        ci_name: "zt-rhelbu.zt-satellite-basics.prod"
+        url: "https://catalog.demo.redhat.com/catalog?item=zt-rhelbu.zt-satellite-basics.prod"
+        relevance_score: 71
+        why_it_fits: "Covers Red Hat Satellite 6.19 with Lightspeed integration, CVE vulnerability management, and Insights host registration — a broader Satellite lab that includes Lightspeed as one module."
+        workloads: []
+      - title: "Remediating vulnerabilities with Red Hat Insights Vulnerability"
+        ci_name: "zt-rhelbu.zt-insights-vulnerability.prod"
+        url: "https://catalog.demo.redhat.com/catalog?item=zt-rhelbu.zt-insights-vulnerability.prod"
+        relevance_score: 64
+        why_it_fits: "Covers Insights Vulnerability management, CVE identification, and RHEL registration — overlaps with the Insights/CVE portion but focuses on Hybrid Cloud Console, not Satellite or Lightspeed."
+        workloads: []
+    catalog_gap: "This lab uniquely focuses on the step-by-step satellite-installer workflow to enable Lightspeed — a discrete installation exercise not confirmed present in the catalog's existing Lightspeed labs. It is scoped as a short standalone (55 min) for audiences with no prior Satellite experience, whereas the closest match (zt-lightspeed-satellite) runs 90 minutes and uses an Infinicorp scenario that assumes broader Satellite familiarity."
     rejections: []
 
   infra:
