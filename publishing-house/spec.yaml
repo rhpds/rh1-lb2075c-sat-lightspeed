@@ -14,7 +14,7 @@ project:
   showroom_type: "zero_touch"
   intake_type: "migration"
   automation_type: "ansible"
-  description: "A hands on lab that delves into Red Hat Satellite features such as compliance monitoring and scanning, image mode, and vulnerability detection and remediation."
+  description: "A hands-on lab that walks through installing Red Hat Lightspeed on a Satellite server, staging CVE metadata, and using Lightspeed to detect and display host vulnerabilities."
   # content_reviewer_email and infra_reviewer_email are assigned by the RHDP team — not set by the author
   jira_ticket: "RHDPCD-1529"
   workflow_id: "0123522c-4591-417c-9ab4-a991cfbf8990"
@@ -61,21 +61,21 @@ spec:
     vms_per_student:
       - role: satellite.lab
         count: 1
-        cpu: null
-        ram_gb: null
-        disk_gb: null
-        os: RHEL
+        cpu: 8
+        ram_gb: 32
+        disk_gb: 540
+        os: RHEL (satellite-server image)
       - role: rhel1.lab
         count: 1
-        cpu: null
-        ram_gb: null
-        disk_gb: null
+        cpu: 1
+        ram_gb: 4
+        disk_gb: 40
         os: RHEL 10
       - role: rhel2.lab
         count: 1
-        cpu: null
-        ram_gb: null
-        disk_gb: null
+        cpu: 1
+        ram_gb: 4
+        disk_gb: 40
         os: RHEL 10
 
     # --- Common fields (both platforms) ---

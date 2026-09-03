@@ -61,7 +61,11 @@ Beginner
 - **Cluster type:** N/A — RHEL VMs only, no OpenShift
 - **OCP version:** N/A
 - **Topology:** Per-student — each student receives their own dedicated 3-VM set (satellite.lab, rhel1.lab, rhel2.lab)
-- **Sizing:** TBD — confirmed in infrastructure phase
+- **Sizing per student:**
+  - 1 × satellite.lab — 8 vCPU, 32 GB RAM, 540 GB disk (satellite-server image)
+  - 1 × rhel1.lab — 1 vCPU, 4 GB RAM, 40 GB disk (RHEL 10)
+  - 1 × rhel2.lab — 1 vCPU, 4 GB RAM, 40 GB disk (RHEL 10)
+- **Egress:** TCP 443 only (required for security.access.redhat.com)
 - **Automation approach:** Ansible
 - **AI/MaaS:** None
 - **External services:** security.access.redhat.com (CVE metadata download during lab)
