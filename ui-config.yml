@@ -4,14 +4,14 @@ antora:
   name: modules
   dir: www
   modules:
-    - name: module-01
+    - name: module-01-introduction
       label: "Introduction"
       solveButton: false
-    - name: module-02
-      label: "Module 02"
+    - name: module-02-install-lightspeed
+      label: "Install Red Hat Lightspeed"
       solveButton: false
-    - name: module-03
-      label: "Module 03"
+    - name: module-03-configure-cve-data
+      label: "Configure CVE Data and Verify Lightspeed"
       solveButton: false
 
 tabs:
