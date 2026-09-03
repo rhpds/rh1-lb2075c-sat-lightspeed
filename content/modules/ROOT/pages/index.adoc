@@ -1,5 +1,20 @@
-= My Lab Title
+= Installing Red Hat Lightspeed on Red Hat Satellite
 
-This project was created with the RHDP Publishing House template.
+Welcome to this hands-on lab. You will install Red Hat Lightspeed on a pre-configured Satellite server, stage CVE metadata, register RHEL 10 hosts with Red Hat Insights, and verify that vulnerability data appears in the Satellite web UI.
 
-Run `/rhdp-publishing-house` in Claude Code to begin.
+== What You'll Do
+
+* Install Red Hat Lightspeed using the `satellite-installer` command
+* Download and stage the CVE metadata database (`cvemap.xml`)
+* Register RHEL 10 managed hosts with Red Hat Insights
+* Verify vulnerability detection in the Lightspeed Vulnerability tab
+
+== Lab Environment
+
+Your environment includes three pre-provisioned nodes:
+
+* *satellite.lab* — Red Hat Satellite server with content pre-synchronized
+* *rhel1.lab* — RHEL 10 managed host
+* *rhel2.lab* — RHEL 10 managed host
+
+Use the terminal tabs in the sidebar to access each node.

@@ -30,15 +30,15 @@ spec:
     - id: module-01
       title: "Introduction"
       duration_min: 10
-      status: not_started
+      status: in_progress
     - id: module-02
       title: "Install Red Hat Lightspeed"
       duration_min: 25
-      status: not_started
+      status: in_progress
     - id: module-03
       title: "Configure CVE Data and Verify Lightspeed"
       duration_min: 20
-      status: not_started
+      status: in_progress
   environment:
     platform: "rhel-vms"           # ocp | rhel-vms — determines which sizing fields apply
     topology: "per-student"        # shared-cluster | per-student | cnv-pool
@@ -96,7 +96,7 @@ spec:
 development:
   automation:
     ansible:
-      status: not_started
+      status: in_progress
   e2e:
     status: not_started
   healthCheck:
