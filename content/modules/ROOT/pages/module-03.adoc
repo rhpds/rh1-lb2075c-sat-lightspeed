@@ -1,0 +1,38 @@
+:imagesdir: ../assets/images
+
+== Download the latest cvemap.xml and copy it to the Foreman directory
+
+The cvemap.xml file is a metadata file that contains the latest CVE information and is used by the Lightspeed vulnerability service to check for vulnerabilities in systems managed by Satellite.
+
+In the `satellite.lab terminal` tab, run the following commands to download the latest cvemap.xml.
+
+[source,bash,run]
+----
+curl -o cvemap.xml https://security.access.redhat.com/data/meta/v1/cvemap.xml
+----
+
+While still in the `satellite.lab terminal` tab, run the following command to copy the cvemap.xml file to the Foreman directory.
+
+[source,bash,run]
+----
+cp cvemap.xml /var/lib/foreman/
+----
+
+== Verify Red Hat Lightspeed is working
+
+IMPORTANT: On each of the RHEL 10 client systems, switch to the terminal tab for the system and run the following command to refresh Red Hat Lightspeed.
+
+.Terminal Tab for RHEL 10 Client System
+image::rhel1-rhel2-tab.png[]
+
+Now run the following command on both `rhel1.lab` and `rhel2.lab` systems.
+
+[source,bash,run,IMPORTANT]
+----
+insights-client --register
+----
+
+Now navigate to the `Red Hat Lightspeed` > `Vulnerability` tab and you should see the vulnerabilities for the RHEL 10 client systems.
+
+.Vulnerabilities for RHEL 10 Client Systems
+image::working.png[]
