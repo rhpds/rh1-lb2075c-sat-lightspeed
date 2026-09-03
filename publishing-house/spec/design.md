@@ -39,11 +39,11 @@ Lab (hands-on)
 
 | Module | Title | Duration |
 |--------|-------|----------|
-| 1 | Introduction | 10 min |
-| 2 | Install Red Hat Lightspeed | 25 min |
-| 3 | Configure CVE Data and Verify Lightspeed | 20 min |
-| — | **Total hands-on** | **55 min** |
-| — | **Total lab** | **~1 hour** |
+| 1 | Introduction | 3 min |
+| 2 | Install Red Hat Lightspeed | 7 min |
+| 3 | Configure CVE Data and Verify Lightspeed | 5 min |
+| — | **Total hands-on** | **15 min** |
+| — | **Total lab** | **~15 min** |
 
 ## Difficulty Level
 
