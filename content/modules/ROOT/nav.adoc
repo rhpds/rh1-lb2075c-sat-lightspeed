@@ -1,3 +1,4 @@
+* xref:index.adoc[Lab Overview]
 * xref:module-01-introduction.adoc[Introduction]
 * xref:module-02-install-lightspeed.adoc[Install Red Hat Lightspeed]
 * xref:module-03-configure-cve-data.adoc[Configure CVE Data and Verify Lightspeed]

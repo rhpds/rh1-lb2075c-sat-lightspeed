@@ -1,0 +1,8 @@
+---
+- name: Validate module-01-introduction
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: Placeholder validate task
+      ansible.builtin.debug:
+        msg: "Validate automation not yet implemented for this module."

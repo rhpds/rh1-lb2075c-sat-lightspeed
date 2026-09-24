@@ -1,6 +1,15 @@
 ---
 
 name: modules
+title: "Installing Red Hat Lightspeed on Red Hat Satellite"
 version: master
 nav:
   - modules/ROOT/nav.adoc
+
+asciidoc:
+  attributes:
+    experimental: true
+    page-pagination: true
+    guid: '%GUID%'
+    ssh_user: lab-user
+    ssh_password: changeme
