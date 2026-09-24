@@ -8,7 +8,7 @@ This opening module orients participants to the lab and its goals before any han
 
 - **Target persona:** System administrators and Satellite administrators new to Red Hat Lightspeed
 - **Prerequisites for this module:** None — this is the entry point for the lab
-- **Estimated duration:** 10 minutes
+- **Estimated duration:** 3 minutes
 
 ## Learning Objectives
 
@@ -19,9 +19,9 @@ This opening module orients participants to the lab and its goals before any han
 
 | Section | Title | Duration |
 |---------|-------|----------|
-| 1 | Introduction and lab goal | 3 min |
-| 2 | Lab environment overview | 3 min |
-| 3 | Log into the Satellite web UI | 4 min |
+| 1 | Introduction and lab goal | 1 min |
+| 2 | Lab environment overview | 1 min |
+| 3 | Log into the Satellite web UI | 1 min |
 
 ## Detailed Steps
 

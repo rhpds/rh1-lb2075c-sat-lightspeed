@@ -8,7 +8,7 @@ This module introduces Red Hat Lightspeed — a containerized, Podman-based vuln
 
 - **Target persona:** System administrators and Satellite administrators enabling Lightspeed for the first time
 - **Prerequisites for this module:** Completion of module-01; Satellite web UI session must be active
-- **Estimated duration:** 25 minutes
+- **Estimated duration:** 7 minutes
 
 ## Learning Objectives
 
@@ -19,9 +19,9 @@ This module introduces Red Hat Lightspeed — a containerized, Podman-based vuln
 
 | Section | Title | Duration |
 |---------|-------|----------|
-| 1 | Introduction to Red Hat Lightspeed | 7 min |
-| 2 | Run satellite-installer to enable Lightspeed | 13 min |
-| 3 | Verify the Lightspeed menu in the Satellite web UI | 5 min |
+| 1 | Introduction to Red Hat Lightspeed | 2 min |
+| 2 | Run satellite-installer to enable Lightspeed | 3 min |
+| 3 | Verify the Lightspeed menu in the Satellite web UI | 2 min |
 
 ## Detailed Steps
 
