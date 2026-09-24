@@ -34,7 +34,7 @@ spec:
     - id: module-02
       title: "Install Red Hat Lightspeed"
       duration_min: 7
-      status: in_progress
+      status: complete
     - id: module-03
       title: "Configure CVE Data and Verify Lightspeed"
       duration_min: 5
