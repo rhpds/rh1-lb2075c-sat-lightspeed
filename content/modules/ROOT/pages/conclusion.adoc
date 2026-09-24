@@ -1,0 +1,41 @@
+:imagesdir: ../assets/images
+
+= Conclusion and Next Steps
+
+You have completed the *Installing Red Hat Lightspeed on Red Hat Satellite* lab. In a short session, you went from a Satellite server with no vulnerability monitoring capability to a fully operational Red Hat Lightspeed deployment showing CVE exposure across your managed RHEL hosts — all without sending any data outside your environment.
+
+== What You've Learned
+
+* *Install Red Hat Lightspeed* on a Satellite server using the `satellite-installer --enable-iop` command. The installer handles container configuration and service setup automatically through Podman.
+
+* *Configure the CVE metadata database* by downloading `cvemap.xml` from Red Hat's security portal and staging it in `/var/lib/foreman/`. This local file is the foundation for all on-premises vulnerability detection.
+
+* *Register RHEL 10 hosts with Red Hat Insights* using `insights-client --register`. Registration makes managed hosts visible to the Lightspeed vulnerability engine without sending data to external services.
+
+* *Verify that Red Hat Lightspeed detects and displays host vulnerabilities* in the Satellite web UI by navigating to *Red Hat Lightspeed > Vulnerability* and confirming CVE data appears for your registered hosts.
+
+== Next Steps
+
+Now that Lightspeed is running in your environment, consider these paths to build on what you've done:
+
+* *Automate CVE database updates* — Schedule a cron job or Ansible playbook to periodically refresh `cvemap.xml` from `security.access.redhat.com` so your vulnerability data stays current.
+
+* *Scale to more hosts* — Run `insights-client --register` on additional RHEL hosts and watch them appear in the Lightspeed Vulnerability tab without any further Satellite configuration.
+
+* *Explore Satellite content management* — The Satellite server managing your hosts also handles content views, lifecycle environments, and errata. Understanding these features helps you act on the CVEs that Lightspeed surfaces.
+
+* *Try the Satellite Basics lab* — If you want a broader walkthrough of Red Hat Satellite, the https://catalog.demo.redhat.com/catalog?item=zt-rhelbu.zt-satellite-basics.prod[Satellite Basics lab] covers content synchronization, host registration, and lifecycle management.
+
+* *Explore Insights Vulnerability management* — For environments that use Red Hat Hybrid Cloud Console, the https://catalog.demo.redhat.com/catalog?item=zt-rhelbu.zt-insights-vulnerability.prod[Insights Vulnerability lab] shows how to manage CVE remediation at scale using Advisor and Vulnerability service.
+
+== References
+
+* https://docs.redhat.com/en/documentation/red_hat_satellite/6.19/html/installing_satellite_server_in_a_connected_network_environment/performing-additional-configuration-on-server_satellite#installing-and-configuring-red-hat-lightspeed-in-satellite[Installing and Configuring Red Hat Lightspeed in Satellite — Red Hat Documentation]
+
+* https://security.access.redhat.com/data/meta/v1/cvemap.xml[Red Hat CVE Metadata (cvemap.xml) — security.access.redhat.com]
+
+* https://docs.redhat.com/en/documentation/red_hat_satellite/6.19/[Red Hat Satellite 6.19 Documentation]
+
+* https://docs.redhat.com/en/documentation/red_hat_insights/[Red Hat Insights Documentation]
+
+* https://catalog.demo.redhat.com/catalog?item=zt-rhelbu.zt-lightspeed-satellite.prod[Hands on with Red Hat Lightspeed in Satellite — RHDP Catalog]
