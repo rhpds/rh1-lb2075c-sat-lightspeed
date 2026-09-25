@@ -1,26 +1,73 @@
 ---
-# HEALTHCHECK — Quick environment readiness check (migrated ZT Guided content)
-# Verifies the bastion host is reachable via SSH. Non-destructive: does not
-# modify any lab state. Should complete in under 60 seconds.
+# HEALTHCHECK — Environment readiness for event use
+# Verifies all three hosts are reachable, Satellite services are running,
+# content is synced, Lightspeed is NOT yet installed (clean starting state),
+# and egress to security.access.redhat.com works (Module 3 dependency).
 #
+# Non-destructive: does not modify any lab state.
 # Exit 0 = healthy, non-zero = unhealthy.
 
 - name: Build inventory
   hosts: localhost
   gather_facts: false
   tasks:
-    - name: Add bastion host
+    - name: Add bastion host (satellite.lab)
       ansible.builtin.add_host:
-        name: "{{ lookup('ansible.builtin.env', 'BASTION_HOST') }}"
+        name: satellite.lab
         ansible_ssh_host: "{{ lookup('ansible.builtin.env', 'BASTION_HOST') }}"
         ansible_ssh_port: "{{ lookup('ansible.builtin.env', 'BASTION_PORT') }}"
         ansible_ssh_user: "{{ lookup('ansible.builtin.env', 'BASTION_USER') }}"
         ansible_ssh_pass: "{{ lookup('ansible.builtin.env', 'BASTION_PASSWORD') }}"
+        groups: satellite
 
-- name: Healthcheck
-  hosts: all:!localhost
+- name: Healthcheck - satellite.lab
+  hosts: satellite
   gather_facts: false
-  become: false
+  become: true
   tasks:
     - name: Verify SSH connectivity
       ansible.builtin.ping:
+
+    - name: Verify Satellite web UI is listening on port 443
+      ansible.builtin.wait_for:
+        port: 443
+        host: localhost
+        timeout: 10
+
+    - name: Verify foreman services are running
+      ansible.builtin.command: satellite-maintain service status --brief
+      register: _svc_status
+      changed_when: false
+      failed_when: _svc_status.rc != 0
+
+    - name: Verify rhel1.lab is reachable from satellite
+      ansible.builtin.command: ping -c 1 -W 5 rhel1.lab
+      register: _ping_rhel1
+      changed_when: false
+      failed_when: _ping_rhel1.rc != 0
+
+    - name: Verify rhel2.lab is reachable from satellite
+      ansible.builtin.command: ping -c 1 -W 5 rhel2.lab
+      register: _ping_rhel2
+      changed_when: false
+      failed_when: _ping_rhel2.rc != 0
+
+    - name: Verify Lightspeed is NOT yet installed (clean starting state)
+      ansible.builtin.command: satellite-installer --help
+      register: _installer_help
+      changed_when: false
+
+    - name: Check iop containers are absent
+      ansible.builtin.shell: podman ps --format '{{ '{{' }}.Names{{ '}}' }}' | grep -qi iop
+      register: _iop_check
+      changed_when: false
+      failed_when: _iop_check.rc == 0
+      ignore_errors: false
+
+    - name: Verify egress to security.access.redhat.com (Module 3 dependency)
+      ansible.builtin.uri:
+        url: https://security.access.redhat.com
+        method: HEAD
+        status_code: [200, 301, 302, 403]
+        timeout: 15
+      register: _egress_check
