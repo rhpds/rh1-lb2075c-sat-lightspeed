@@ -1,10 +1,15 @@
 ---
-# HEALTHCHECK — Quick environment readiness check (Satellite Lightspeed lab)
-# Verifies all hosts are reachable and Satellite services are operational.
+# HEALTHCHECK — Environment readiness for event use (Satellite Lightspeed lab)
+# Verifies satellite host is reachable, services are running, Lightspeed is
+# NOT yet installed (clean starting state), RHEL hosts are up, and egress
+# to security.access.redhat.com works.
+#
 # Non-destructive: does not modify any lab state.
 # Should complete in under 60 seconds.
 #
-# Required env vars: BASTION_HOST, BASTION_PORT, BASTION_USER, BASTION_PASSWORD
+# Env vars injected by ZT runner (Kubernetes service discovery):
+#   SATELLITE_SSH_SERVICE_HOST, SATELLITE_SSH_SERVICE_PORT
+#   ANSIBLE_USER, ANSIBLE_PASSWORD
 #
 # Exit 0 = healthy, non-zero = unhealthy.
 
@@ -12,29 +17,15 @@
   hosts: localhost
   gather_facts: false
   tasks:
-    - name: Add bastion (satellite) host
+    - name: Add satellite host
       ansible.builtin.add_host:
-        name: "{{ lookup('ansible.builtin.env', 'BASTION_HOST') }}"
-        ansible_ssh_host: "{{ lookup('ansible.builtin.env', 'BASTION_HOST') }}"
-        ansible_ssh_port: "{{ lookup('ansible.builtin.env', 'BASTION_PORT') }}"
-        ansible_ssh_user: "{{ lookup('ansible.builtin.env', 'BASTION_USER') }}"
-        ansible_ssh_pass: "{{ lookup('ansible.builtin.env', 'BASTION_PASSWORD') }}"
+        name: satellite
+        ansible_ssh_host: "{{ lookup('ansible.builtin.env', 'SATELLITE_SSH_SERVICE_HOST') }}"
+        ansible_ssh_port: "{{ lookup('ansible.builtin.env', 'SATELLITE_SSH_SERVICE_PORT') | default('22', true) }}"
+        ansible_ssh_user: "{{ lookup('ansible.builtin.env', 'ANSIBLE_USER') }}"
+        ansible_ssh_pass: "{{ lookup('ansible.builtin.env', 'ANSIBLE_PASSWORD') }}"
         ansible_ssh_common_args: "-o StrictHostKeyChecking=no"
         groups: satellite
-
-    - name: Add RHEL target hosts
-      ansible.builtin.add_host:
-        name: "{{ item }}"
-        ansible_ssh_host: "{{ item }}"
-        ansible_ssh_port: "{{ lookup('ansible.builtin.env', 'BASTION_PORT') }}"
-        ansible_ssh_user: "{{ lookup('ansible.builtin.env', 'BASTION_USER') }}"
-        ansible_ssh_pass: "{{ lookup('ansible.builtin.env', 'BASTION_PASSWORD') }}"
-        ansible_ssh_common_args: "-o StrictHostKeyChecking=no"
-        ansible_python_interpreter: /usr/libexec/platform-python
-        groups: rhel_targets
-      loop:
-        - rhel1
-        - rhel2
 
 - name: Healthcheck - Satellite host
   hosts: satellite
@@ -56,6 +47,14 @@
         status_code: [200, 302]
       changed_when: false
 
+    - name: Verify rhel1 is reachable from satellite
+      ansible.builtin.command: ping -c 1 -W 5 rhel1
+      changed_when: false
+
+    - name: Verify rhel2 is reachable from satellite
+      ansible.builtin.command: ping -c 1 -W 5 rhel2
+      changed_when: false
+
     - name: Check iop containers are absent (Lightspeed not pre-installed)
       ansible.builtin.shell:
         cmd: podman ps --format '{{ '{{' }}.Names{{ '}}' }}' | grep -qi iop
@@ -69,11 +68,3 @@
         method: HEAD
         status_code: [200, 301, 302, 403]
         timeout: 15
-
-- name: Healthcheck - RHEL target hosts
-  hosts: rhel_targets
-  gather_facts: false
-  become: false
-  tasks:
-    - name: Verify SSH connectivity
-      ansible.builtin.ping:
