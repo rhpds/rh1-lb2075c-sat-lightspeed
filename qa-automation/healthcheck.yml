@@ -1,8 +1,7 @@
 ---
 # HEALTHCHECK — Environment readiness for event use (Satellite Lightspeed lab)
 # Verifies satellite host is reachable, services are running, Lightspeed is
-# NOT yet installed (clean starting state), RHEL hosts are up, and egress
-# to security.access.redhat.com works.
+# NOT yet installed (clean starting state), and RHEL hosts are up.
 #
 # Non-destructive: does not modify any lab state.
 # Should complete in under 60 seconds.
@@ -62,9 +61,16 @@
       changed_when: false
       failed_when: _iop_check.rc == 0
 
-    - name: Verify egress to security.access.redhat.com
+    - name: Check egress to security.access.redhat.com (warning only)
       ansible.builtin.uri:
         url: https://security.access.redhat.com
         method: HEAD
         status_code: [200, 301, 302, 403]
         timeout: 15
+      register: _egress_check
+      ignore_errors: true
+
+    - name: Warn if egress is unavailable
+      ansible.builtin.debug:
+        msg: "WARNING: No egress to security.access.redhat.com — Module 3 cvemap.xml download will fail unless pre-staged"
+      when: _egress_check is failed
