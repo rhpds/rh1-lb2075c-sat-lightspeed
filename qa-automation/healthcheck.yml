@@ -60,17 +60,3 @@
       register: _iop_check
       changed_when: false
       failed_when: _iop_check.rc == 0
-
-    - name: Check egress to security.access.redhat.com (warning only)
-      ansible.builtin.uri:
-        url: https://security.access.redhat.com
-        method: HEAD
-        status_code: [200, 301, 302, 403]
-        timeout: 15
-      register: _egress_check
-      ignore_errors: true
-
-    - name: Warn if egress is unavailable
-      ansible.builtin.debug:
-        msg: "WARNING: No egress to security.access.redhat.com — Module 3 cvemap.xml download will fail unless pre-staged"
-      when: _egress_check is failed
