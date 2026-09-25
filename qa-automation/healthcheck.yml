@@ -1,7 +1,8 @@
 ---
 # HEALTHCHECK — Environment readiness for event use (Satellite Lightspeed lab)
 # Verifies satellite host is reachable, services are running, Lightspeed is
-# NOT yet installed (clean starting state), and RHEL hosts are up.
+# NOT yet installed (clean starting state), RHEL hosts are up, and egress
+# to security.access.redhat.com works (Module 3 dependency).
 #
 # Non-destructive: does not modify any lab state.
 # Should complete in under 60 seconds.
@@ -60,3 +61,9 @@
       register: _iop_check
       changed_when: false
       failed_when: _iop_check.rc == 0
+
+    - name: Verify egress to security.access.redhat.com (Module 3 dependency)
+      ansible.builtin.command: curl -s -o /dev/null -w '%{http_code}' --head --max-time 15 https://security.access.redhat.com
+      register: _egress
+      changed_when: false
+      failed_when: _egress.stdout not in ['200', '301', '302', '403']
