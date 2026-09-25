@@ -11,16 +11,16 @@
   hosts: localhost
   gather_facts: false
   tasks:
-    - name: Add bastion host (satellite.lab)
+    - name: Add bastion host
       ansible.builtin.add_host:
-        name: satellite.lab
+        name: "{{ lookup('ansible.builtin.env', 'BASTION_HOST') }}"
         ansible_ssh_host: "{{ lookup('ansible.builtin.env', 'BASTION_HOST') }}"
         ansible_ssh_port: "{{ lookup('ansible.builtin.env', 'BASTION_PORT') }}"
         ansible_ssh_user: "{{ lookup('ansible.builtin.env', 'BASTION_USER') }}"
         ansible_ssh_pass: "{{ lookup('ansible.builtin.env', 'BASTION_PASSWORD') }}"
         groups: satellite
 
-- name: Healthcheck - satellite.lab
+- name: Healthcheck
   hosts: satellite
   gather_facts: false
   become: true
@@ -52,12 +52,7 @@
       changed_when: false
       failed_when: _ping_rhel2.rc != 0
 
-    - name: Verify Lightspeed is NOT yet installed (clean starting state)
-      ansible.builtin.command: satellite-installer --help
-      register: _installer_help
-      changed_when: false
-
-    - name: Check iop containers are absent
+    - name: Check iop containers are absent (Lightspeed not pre-installed)
       ansible.builtin.shell: podman ps --format '{{ '{{' }}.Names{{ '}}' }}' | grep -qi iop
       register: _iop_check
       changed_when: false
