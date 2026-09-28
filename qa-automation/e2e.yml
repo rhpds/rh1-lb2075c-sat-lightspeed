@@ -56,7 +56,7 @@
 # ── Module 02: Install Lightspeed ────────────────────────────────────
 # Student action: satellite-installer --enable-iop
 # Solve: run the installer
-# Validate: iop containers are running
+# Validate: iop containers are running (with retry — containers start async)
 
 - name: "Module 02 - Solve: Install Red Hat Lightspeed"
   hosts: satellite
@@ -81,10 +81,24 @@
   gather_facts: false
   become: true
   tasks:
-    - name: Verify iop containers are running
+    - name: Wait for iop containers to start (async after installer)
       ansible.builtin.shell:
         cmd: podman ps --format '{{ '{{' }}.Names{{ '}}' }}' | grep -qi iop
+      register: _iop_check
       changed_when: false
+      retries: 18
+      delay: 20
+      until: _iop_check.rc == 0
+
+    - name: Count running iop containers
+      ansible.builtin.shell:
+        cmd: podman ps --format '{{ '{{' }}.Names{{ '}}' }}' | grep -ci iop
+      register: _iop_count
+      changed_when: false
+
+    - name: Log iop container count
+      ansible.builtin.debug:
+        msg: "{{ _iop_count.stdout | trim }} iop containers running"
 
     - name: Verify Lightspeed API endpoint is up
       ansible.builtin.uri:
