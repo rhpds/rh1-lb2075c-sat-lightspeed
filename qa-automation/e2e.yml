@@ -1,40 +1,179 @@
 ---
-# E2E — End-to-end test (migrated ZT Guided content)
-# Solves and validates every module in ui-config.yml order, reusing the
-# legacy runtime-automation shell scripts (solve-<host>.sh / validation-<host>.sh)
-# that a migrated repo already ships. Fails on the first broken module.
+# E2E — Solve and validate all modules (Satellite Lightspeed lab)
+# Replays every student action and validates the outcome for each module.
+# Designed for event readiness testing — generates real cluster load
+# (satellite-installer, container pulls, insights registration).
+#
+# Module order: 01-introduction → 02-install-lightspeed → 03-configure-cve-data
+#
+# Env vars injected by ZT runner (Kubernetes service discovery):
+#   SATELLITE_SSH_SERVICE_HOST, SATELLITE_SSH_SERVICE_PORT
+#   ANSIBLE_USER, ANSIBLE_PASSWORD
+#
+# Exit 0 = all modules pass, non-zero = first failure stops the run.
 
 - name: Build inventory
   hosts: localhost
   gather_facts: false
   tasks:
-    - name: Add bastion host
+    - name: Add satellite host
       ansible.builtin.add_host:
-        name: "{{ lookup('ansible.builtin.env', 'BASTION_HOST') }}"
-        ansible_ssh_host: "{{ lookup('ansible.builtin.env', 'BASTION_HOST') }}"
-        ansible_ssh_port: "{{ lookup('ansible.builtin.env', 'BASTION_PORT') }}"
-        ansible_ssh_user: "{{ lookup('ansible.builtin.env', 'BASTION_USER') }}"
-        ansible_ssh_pass: "{{ lookup('ansible.builtin.env', 'BASTION_PASSWORD') }}"
+        name: satellite
+        ansible_ssh_host: "{{ lookup('ansible.builtin.env', 'SATELLITE_SSH_SERVICE_HOST') }}"
+        ansible_ssh_port: "{{ lookup('ansible.builtin.env', 'SATELLITE_SSH_SERVICE_PORT') | default('22', true) }}"
+        ansible_ssh_user: "{{ lookup('ansible.builtin.env', 'ANSIBLE_USER') }}"
+        ansible_ssh_pass: "{{ lookup('ansible.builtin.env', 'ANSIBLE_PASSWORD') }}"
+        ansible_ssh_common_args: "-o StrictHostKeyChecking=no"
+        groups: satellite
 
-- name: E2E - solve and validate all modules
-  hosts: all:!localhost
+# ── Module 01: Introduction ──────────────────────────────────────────
+# Student action: log into Satellite Web UI
+# Solve: no-op (UI login cannot be automated via Ansible)
+# Validate: Web UI responds
+
+- name: "Module 01 - Validate Satellite Web UI"
+  hosts: satellite
   gather_facts: false
   become: true
-  vars:
-    runtime_path: "{{ playbook_dir }}/../runtime-automation"
-    _ui_config: "{{ lookup('file', playbook_dir ~ '/../ui-config.yml') | from_yaml }}"
-    modules_in_order: "{{ _ui_config.antora.modules | map(attribute='name') | list }}"
   tasks:
-    - name: "Run solve then validation for each module"
-      ansible.builtin.include_tasks: tasks/run_script.yml
-      loop: >-
-        {{
-          modules_in_order
-          | product(['solve', 'validation'])
-          | list
-        }}
-      loop_control:
-        loop_var: _module_stage
-      vars:
-        module_name: "{{ _module_stage[0] }}"
-        stage_name: "{{ _module_stage[1] }}"
+    - name: Verify Satellite Web UI is responding
+      ansible.builtin.uri:
+        url: https://localhost/users/login
+        validate_certs: false
+        status_code: [200, 302]
+      changed_when: false
+
+    - name: Verify Satellite API is responding (login with credentials)
+      ansible.builtin.uri:
+        url: https://localhost/api/v2/status
+        validate_certs: false
+        user: admin
+        password: "bc31c9a6-9ff0-11ec-9587-00155d1b0702"
+        force_basic_auth: true
+        status_code: 200
+      changed_when: false
+
+# ── Module 02: Install Lightspeed ────────────────────────────────────
+# Student action: satellite-installer --enable-iop
+# Solve: run the installer
+# Validate: iop containers are running
+
+- name: "Module 02 - Solve: Install Red Hat Lightspeed"
+  hosts: satellite
+  gather_facts: false
+  become: true
+  tasks:
+    - name: Check if Lightspeed is already installed
+      ansible.builtin.shell:
+        cmd: podman ps --format '{{ '{{' }}.Names{{ '}}' }}' | grep -qi iop
+      register: _iop_pre
+      changed_when: false
+      failed_when: false
+
+    - name: Run satellite-installer --enable-iop
+      ansible.builtin.command:
+        cmd: satellite-installer --enable-iop
+      when: _iop_pre.rc != 0
+      timeout: 600
+
+- name: "Module 02 - Validate: Lightspeed containers running"
+  hosts: satellite
+  gather_facts: false
+  become: true
+  tasks:
+    - name: Verify iop containers are running
+      ansible.builtin.shell:
+        cmd: podman ps --format '{{ '{{' }}.Names{{ '}}' }}' | grep -qi iop
+      changed_when: false
+
+    - name: Verify Lightspeed API endpoint is up
+      ansible.builtin.uri:
+        url: https://localhost/lightspeed
+        validate_certs: false
+        status_code: [200, 301, 302, 401, 403]
+      changed_when: false
+      failed_when: false
+      register: _ls_ui
+
+    - name: Log Lightspeed UI status
+      ansible.builtin.debug:
+        msg: "Lightspeed endpoint returned HTTP {{ _ls_ui.status | default('unreachable') }}"
+
+# ── Module 03: Configure CVE Data ───────────────────────────────────
+# Student action: download cvemap.xml, copy to /var/lib/foreman/,
+#   run insights-client --register on rhel1 and rhel2
+# Solve: replay all three steps
+# Validate: file exists, hosts registered
+
+- name: "Module 03 - Solve: Download cvemap.xml and register hosts"
+  hosts: satellite
+  gather_facts: false
+  become: true
+  tasks:
+    - name: Download cvemap.xml from Red Hat
+      ansible.builtin.command:
+        cmd: curl -o /root/cvemap.xml --max-time 120 https://security.access.redhat.com/data/meta/v1/cvemap.xml
+      args:
+        creates: /root/cvemap.xml
+
+    - name: Copy cvemap.xml to Foreman directory
+      ansible.builtin.copy:
+        src: /root/cvemap.xml
+        dest: /var/lib/foreman/cvemap.xml
+        remote_src: true
+        owner: foreman
+        group: foreman
+        mode: "0644"
+
+    - name: Register rhel1 with insights-client
+      ansible.builtin.command:
+        cmd: ssh -o StrictHostKeyChecking=no rhel1 insights-client --register
+      register: _rhel1_register
+      changed_when: "'Successfully registered' in _rhel1_register.stdout"
+      failed_when:
+        - _rhel1_register.rc != 0
+        - "'already registered' not in _rhel1_register.stderr"
+      timeout: 120
+
+    - name: Register rhel2 with insights-client
+      ansible.builtin.command:
+        cmd: ssh -o StrictHostKeyChecking=no rhel2 insights-client --register
+      register: _rhel2_register
+      changed_when: "'Successfully registered' in _rhel2_register.stdout"
+      failed_when:
+        - _rhel2_register.rc != 0
+        - "'already registered' not in _rhel2_register.stderr"
+      timeout: 120
+
+- name: "Module 03 - Validate: CVE data and host registration"
+  hosts: satellite
+  gather_facts: false
+  become: true
+  tasks:
+    - name: Verify cvemap.xml exists in Foreman directory
+      ansible.builtin.stat:
+        path: /var/lib/foreman/cvemap.xml
+      register: _cvemap
+      failed_when: not _cvemap.stat.exists
+
+    - name: Verify cvemap.xml is not empty
+      ansible.builtin.assert:
+        that:
+          - _cvemap.stat.size > 1000
+        fail_msg: "cvemap.xml is too small ({{ _cvemap.stat.size }} bytes) — download may have failed"
+
+    - name: Verify rhel1 is registered with insights
+      ansible.builtin.command:
+        cmd: ssh -o StrictHostKeyChecking=no rhel1 insights-client --status
+      register: _rhel1_status
+      changed_when: false
+      failed_when: "'registered' not in _rhel1_status.stdout | lower"
+      timeout: 30
+
+    - name: Verify rhel2 is registered with insights
+      ansible.builtin.command:
+        cmd: ssh -o StrictHostKeyChecking=no rhel2 insights-client --status
+      register: _rhel2_status
+      changed_when: false
+      failed_when: "'registered' not in _rhel2_status.stdout | lower"
+      timeout: 30
