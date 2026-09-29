@@ -55,8 +55,14 @@
 
 # ── Module 02: Install Lightspeed ────────────────────────────────────
 # Student action: satellite-installer --enable-iop
-# Solve: run the installer, then wait for containers to start
+# Solve: run the installer via login shell (required for podman quadlet)
 # Validate: iop containers are running
+#
+# NOTE: satellite-installer MUST run in a login shell (su - root -c)
+# because podman quadlet/systemd unit generation depends on
+# XDG_RUNTIME_DIR and the root user's systemd session. A plain
+# sudo (Ansible become) creates a non-login shell where the
+# installer succeeds but containers never start.
 
 - name: "Module 02 - Solve and Validate: Install Red Hat Lightspeed"
   hosts: satellite
@@ -70,9 +76,9 @@
       changed_when: false
       failed_when: false
 
-    - name: Run satellite-installer --enable-iop
-      ansible.builtin.command:
-        cmd: satellite-installer --enable-iop
+    - name: Run satellite-installer --enable-iop (login shell)
+      ansible.builtin.shell:
+        cmd: su - root -c 'satellite-installer --enable-iop'
       when: _iop_pre.rc != 0
       timeout: 900
       register: _installer
@@ -81,7 +87,7 @@
       ansible.builtin.debug:
         msg: "{{ _installer.stdout_lines | default(['skipped — already installed']) | last }}"
 
-    - name: Wait for iop containers to start (they launch async after installer)
+    - name: Wait for iop containers to start
       ansible.builtin.shell:
         cmd: podman ps --format '{{ '{{' }}.Names{{ '}}' }}' | grep -ci iop
       register: _iop_count
