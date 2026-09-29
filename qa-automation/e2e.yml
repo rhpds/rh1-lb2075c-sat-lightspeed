@@ -55,15 +55,15 @@
 
 # ── Module 02: Install Lightspeed ────────────────────────────────────
 # Student action: satellite-installer --enable-iop
-# Solve: run the installer
-# Validate: iop containers are running (with retry — containers start async)
+# Solve: run the installer, then wait for containers to start
+# Validate: iop containers are running
 
-- name: "Module 02 - Solve: Install Red Hat Lightspeed"
+- name: "Module 02 - Solve and Validate: Install Red Hat Lightspeed"
   hosts: satellite
   gather_facts: false
   become: true
   tasks:
-    - name: Check if Lightspeed is already installed
+    - name: Check if Lightspeed containers are already running
       ansible.builtin.shell:
         cmd: podman ps --format '{{ '{{' }}.Names{{ '}}' }}' | grep -qi iop
       register: _iop_pre
@@ -74,27 +74,21 @@
       ansible.builtin.command:
         cmd: satellite-installer --enable-iop
       when: _iop_pre.rc != 0
-      timeout: 600
+      timeout: 900
+      register: _installer
 
-- name: "Module 02 - Validate: Lightspeed containers running"
-  hosts: satellite
-  gather_facts: false
-  become: true
-  tasks:
-    - name: Wait for iop containers to start (async after installer)
-      ansible.builtin.shell:
-        cmd: podman ps --format '{{ '{{' }}.Names{{ '}}' }}' | grep -qi iop
-      register: _iop_check
-      changed_when: false
-      retries: 18
-      delay: 20
-      until: _iop_check.rc == 0
+    - name: Show installer result
+      ansible.builtin.debug:
+        msg: "{{ _installer.stdout_lines | default(['skipped — already installed']) | last }}"
 
-    - name: Count running iop containers
+    - name: Wait for iop containers to start (they launch async after installer)
       ansible.builtin.shell:
         cmd: podman ps --format '{{ '{{' }}.Names{{ '}}' }}' | grep -ci iop
       register: _iop_count
       changed_when: false
+      retries: 30
+      delay: 20
+      until: _iop_count.stdout | int >= 5
 
     - name: Log iop container count
       ansible.builtin.debug:
@@ -108,6 +102,9 @@
       changed_when: false
       failed_when: false
       register: _ls_ui
+      retries: 6
+      delay: 10
+      until: _ls_ui.status is defined and _ls_ui.status != -1
 
     - name: Log Lightspeed UI status
       ansible.builtin.debug:
